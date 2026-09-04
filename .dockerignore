@@ -1,0 +1,16 @@
+# Never let host-installed deps/build output leak into the build context —
+# each Dockerfile installs its own deps for the image's platform (linux/arm64).
+node_modules
+server/node_modules
+**/node_modules
+
+dist
+dist-ssr
+server/dist
+
+.git
+.DS_Store
+*.log
+
+.vscode
+.idea

@@ -4,20 +4,17 @@ WORKDIR /app
 
 ENV NODE_ENV=development
 
-# Copy package files (package-lock.json is optional)
-COPY package.json package-lock.json* ./
+RUN corepack enable
+
+# Copy package files
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 
 # Install dependencies
-# Use npm ci if package-lock.json exists, otherwise npm install
-RUN if [ -f package-lock.json ]; then \
-      npm ci --legacy-peer-deps; \
-    else \
-      npm install --legacy-peer-deps; \
-    fi
+RUN pnpm install --frozen-lockfile
 
 # Copy application files
 COPY . .
 
 EXPOSE 3000
 
-CMD ["npm", "run", "dev", "--", "--host", "0.0.0.0", "--port", "3000"]
+CMD ["pnpm", "run", "dev", "--", "--host", "0.0.0.0", "--port", "3000"]

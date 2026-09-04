@@ -14,7 +14,7 @@ Custom tool to test ThreeJS components in isolated environment.
 export class YourNameTestable extends YourMeshName {}
 ```
 4. Make sure your docker is running.
-5. Run `make dev-testable` in the project root, or just `make dev` to run both Testable and actual project.
+5. Run `mise run docker-up-test` in the project root, or just `mise run docker-up` to run both Testable and actual project.
 6. In the browser go to `localhost:3001/components/YourMeshName`
 7. That's all, your node is here :)
 

@@ -9,8 +9,7 @@
     "sandbox": "vite --config vite.config.sandbox.ts",
     "test": "jest",
     "build": "tsc && vite build --config vite.config.app.ts",
-    "preview": "vite preview",
-    "prepare": "husky"
+    "preview": "vite preview"
   },
   "devDependencies": {
     "@eslint/config-helpers": "^0.5.1",
@@ -27,7 +26,6 @@
     "eslint-plugin-import": "^2.32.0",
     "eslint-plugin-simple-import-sort": "^12.1.1",
     "globals": "^17.1.0",
-    "husky": "^9.1.7",
     "jest": "^30.2.0",
     "jiti": "^2.6.1",
     "lint-staged": "^16.2.7",
@@ -62,5 +60,6 @@
     "selfsigned": "^5.5.0",
     "three": "^0.182.0",
     "three-bvh-csg": "^0.0.17"
-  }
+  },
+  "packageManager": "pnpm@11.25.0"
 }

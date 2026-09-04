@@ -1,0 +1,11 @@
+# GUI git clients (VS Code, etc.) spawn hooks without the shell's PATH additions
+# that `mise activate` normally provides, so `pnpm` wouldn't resolve. Prepend
+# mise's shims dir explicitly instead of relying on the inherited PATH.
+pre-commit:
+  commands:
+    lint-staged:
+      run: PATH="$HOME/.local/share/mise/shims:$PATH" pnpm exec lint-staged
+    test:
+      run: PATH="$HOME/.local/share/mise/shims:$PATH" pnpm test
+    build:
+      run: PATH="$HOME/.local/share/mise/shims:$PATH" pnpm run build
