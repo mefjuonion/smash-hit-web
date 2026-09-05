@@ -3,7 +3,7 @@ import COPY from '@src/lib/COPY';
 
 export default {
   BUTTON_SHOOT: View.createElement('button', {
-    className: 'base-button',
+    className: 'base-button game-view__shoot-button',
     ariaLabel: COPY.BUTTON_SHOT,
     innerText: COPY.BUTTON_SHOT
   }),
