@@ -23,6 +23,10 @@ export default defineConfig({
     fs: {
       allow: [path.resolve(__dirname)],
     },
+    watch: {
+      usePolling: true,
+      interval: 100,
+    },
   },
   cacheDir: path.resolve(__dirname, 'node_modules/.vite'),
   optimizeDeps: {
