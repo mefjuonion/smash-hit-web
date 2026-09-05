@@ -3,6 +3,7 @@ import './game-view.scss';
 import MobileNetworkManager from '@mobile/singletons/NetworkManager';
 import OrientationManager from '@mobile/singletons/OrientationManager';
 import View from '@src/abstracts/View';
+import PlayerSessionManager from '@src/mobile/singletons/PlayerSessionManager';
 import MESSAGE_TYPES from '@src/singletons/NetworkManager/MESSAGE_TYPES';
 import autoBind from 'auto-bind';
 
@@ -37,6 +38,16 @@ export default class extends View {
     this.network.on(MESSAGE_TYPES.SCORE_UPDATED, ({ score, playerId }) => {
       if (MobileNetworkManager.playerID !== playerId) return;
       this.scoreElement.innerHTML = String(score);
+    });
+
+    this.network.onOpen(() => {
+      const color = PlayerSessionManager.instance.color;
+      if (!color) return;
+
+      this.network.send(MESSAGE_TYPES.PLAYER_JOINED, {
+        playerId: MobileNetworkManager.playerID,
+        color,
+      });
     });
 
     this.orientation.start();

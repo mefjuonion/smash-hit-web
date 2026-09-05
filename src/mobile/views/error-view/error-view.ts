@@ -1,7 +1,7 @@
 import './error-view.scss';
 
 import View from '@src/abstracts/View';
-import COPY from '@src/COPY';
+import COPY from '@src/lib/COPY';
 
 export default class ErrorView extends View {
   protected _view = View.createElement('section', { className: 'error-view' });

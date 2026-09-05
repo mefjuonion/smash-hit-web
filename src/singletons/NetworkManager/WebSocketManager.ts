@@ -1,3 +1,4 @@
+import * as _ from '@src/lib/CONSTANTS';
 import autoBind from 'auto-bind';
 
 import RoomManager from './RoomManager';
@@ -6,7 +7,10 @@ class WebSocketManager {
   static instance = new WebSocketManager();
 
   private socket?: WebSocket;
-  private _clientId?: string;
+  private _clientId: string;
+
+  private reconnectAttempts = 0;
+  private reconnectTimeout?: ReturnType<typeof setTimeout>;
 
   get clientId() { return this._clientId; }
 
@@ -15,25 +19,24 @@ class WebSocketManager {
 
   constructor() {
     autoBind(this);
-    this.socket = new WebSocket(this.getWebsocketURL());
 
-    this.socket.onopen = this.onOpen;
-    this.socket.onclose = this.onClose;
-    this.socket.onerror = this.onError;
-    this.socket.onmessage = this.onMessage;
+    this._clientId = this.loadOrCreateClientId();
+    this.connect();
+
+    document.addEventListener('visibilitychange', this.handleVisibilityChange);
   }
 
   public send(event: SignalingEvent) {
     if (this.socket?.readyState === WebSocket.OPEN)
       return this.socket.send(JSON.stringify(event));
-   
+
     this.pendingMessages.push(event);
   }
 
   public on<T extends keyof SignalingPayloadMap>(type: T, handler: MessageHandler) {
-    if (!this.handlers.has(type)) 
+    if (!this.handlers.has(type))
       this.handlers.set(type, new Set());
-    
+
     this.handlers.get(type)!.add(handler);
 
     return { cancel: () => this.cancelHandler(type, handler) };
@@ -43,10 +46,22 @@ class WebSocketManager {
     this.handlers.get(type)?.delete(handler);
   }
 
+  private connect() {
+    this.socket = new WebSocket(this.getWebsocketURL());
+
+    this.socket.onopen = this.onOpen;
+    this.socket.onclose = this.onClose;
+    this.socket.onerror = this.onError;
+    this.socket.onmessage = this.onMessage;
+  }
+
   private onOpen() {
+    this.reconnectAttempts = 0;
+
     this.socket?.send(JSON.stringify({
       type: 'join',
       room: RoomManager.instance.roomID,
+      clientId: this._clientId,
     }));
 
     this.pendingMessages.forEach(event => this.send(event));
@@ -55,6 +70,7 @@ class WebSocketManager {
 
   private onClose() {
     this.socket = undefined;
+    this.scheduleReconnect();
   };
 
   private onError(error: Event) {
@@ -74,6 +90,49 @@ class WebSocketManager {
     } catch (err) {
       console.error('[WebSocketManager] Failed to parse message:', err);
     }
+  }
+
+  private scheduleReconnect() {
+    if (this.reconnectTimeout) return;
+
+    const delay = Math.min(_.WS_RECONNECT_BASE_DELAY_MS * 2 ** this.reconnectAttempts, _.WS_RECONNECT_MAX_DELAY_MS);
+    this.reconnectAttempts += 1;
+
+    this.reconnectTimeout = setTimeout(() => {
+      this.reconnectTimeout = undefined;
+      this.connect();
+    }, delay);
+  }
+
+  private handleVisibilityChange() {
+    if (document.visibilityState !== 'visible') return;
+    if (this.socket && this.socket.readyState !== WebSocket.CLOSED) return;
+
+    if (this.reconnectTimeout) {
+      clearTimeout(this.reconnectTimeout);
+      this.reconnectTimeout = undefined;
+    }
+
+    this.connect();
+  }
+
+  private loadOrCreateClientId(): string {
+    try {
+      const stored = localStorage.getItem(_.WS_CLIENT_ID_STORAGE_KEY);
+      if (stored) return stored;
+    } catch (err) {
+      console.error('[WebSocketManager] Failed to read persisted clientId:', err);
+    }
+
+    const id = crypto.randomUUID();
+
+    try {
+      localStorage.setItem(_.WS_CLIENT_ID_STORAGE_KEY, id);
+    } catch (err) {
+      console.error('[WebSocketManager] Failed to persist clientId:', err);
+    }
+
+    return id;
   }
 
   private getWebsocketURL(): string {

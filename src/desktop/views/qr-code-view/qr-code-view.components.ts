@@ -1,6 +1,6 @@
 import DesktopNetworkManager from '@desktop/singletons/NetworkManager';
 import View from '@src/abstracts/View';
-import COPY from '@src/COPY';
+import COPY from '@src/lib/COPY';
 
 const QR_CODE = DesktopNetworkManager.instance.qrCodeCanvas;
 QR_CODE.className = 'qr-code-view__qr-code';

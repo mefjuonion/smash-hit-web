@@ -5,8 +5,8 @@ import WebSocketManager from '@src/singletons/NetworkManager/WebSocketManager';
 class MobileNetworkManager extends NetworkManager {
   static instance = new MobileNetworkManager();
 
-  private peerConnection: RTCPeerConnection;
-  private dataChannel: RTCDataChannel;
+  private peerConnection!: RTCPeerConnection;
+  private dataChannel!: RTCDataChannel;
   private hostSenderId?: string;
 
   get isConnected() {
@@ -16,13 +16,9 @@ class MobileNetworkManager extends NetworkManager {
   constructor() {
     super();
 
-    this.peerConnection = new RTCPeerConnection(ICE_SERVERS);
-    this.peerConnection.onicecandidate = this.onIceCandidate;
+    this.createPeerConnection();
 
-    this.dataChannel = this.peerConnection.createDataChannel('game');
-    this.setupDataChannel(this.dataChannel);
-
-    this.createOffer();
+    document.addEventListener('visibilitychange', this.handleVisibilityChange);
   }
 
   public send<T extends GameMessageType>(type: T, payload: GameMessagePayloadMap[T]) {
@@ -49,6 +45,31 @@ class MobileNetworkManager extends NetworkManager {
     if (this.hostSenderId && message.senderId !== this.hostSenderId) return;
 
     await this.peerConnection.addIceCandidate(new RTCIceCandidate(message.payload));
+  }
+
+  private handleVisibilityChange() {
+    if (document.visibilityState === 'visible' && !this.isConnected) this.reconnect();
+  }
+
+  private reconnect() {
+    this.hostSenderId = undefined;
+    this.peerConnection.close();
+    this.createPeerConnection();
+  }
+
+  private createPeerConnection() {
+    this.peerConnection = new RTCPeerConnection(ICE_SERVERS);
+    this.peerConnection.onicecandidate = this.onIceCandidate;
+    this.peerConnection.oniceconnectionstatechange = this.onIceConnectionStateChange;
+
+    this.dataChannel = this.peerConnection.createDataChannel('game');
+    this.setupDataChannel(this.dataChannel);
+
+    this.createOffer();
+  }
+
+  private onIceConnectionStateChange() {
+    if (this.peerConnection.iceConnectionState === 'failed') this.reconnect();
   }
 
   private onIceCandidate(event: RTCPeerConnectionIceEvent) {

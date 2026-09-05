@@ -2,7 +2,7 @@ import './permission-view.scss';
 
 import PermissionManager from '@mobile/singletons/PermissionManager';
 import View from '@src/abstracts/View';
-import COPY from '@src/COPY';
+import COPY from '@src/lib/COPY';
 import RoutingManager from '@src/mobile/singletons/RoutingManager';
 import autoBind from 'auto-bind';
 

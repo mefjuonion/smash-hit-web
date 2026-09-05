@@ -4,7 +4,7 @@ declare interface SignalingPayloadMap {
     'offer': RTCSessionDescriptionInit;
     'answer': RTCSessionDescriptionInit;
     'candidate': RTCIceCandidateInit;
-    'join': { room: string };
+    'join': { room: string; clientId?: string };
     'joined': { clientId: string };
     'error': { message: string };
 }

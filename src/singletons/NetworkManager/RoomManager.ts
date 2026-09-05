@@ -1,7 +1,6 @@
-import isMobile from '@src/utils/isMobile';
+import * as _ from '@src/lib/CONSTANTS';
+import isMobile from '@src/lib/isMobile';
 import QRCode from 'qrcode';
-
-const ROOM_SEARCH_PARAM = 'room';
 
 class RoomManager {
   static instance = new RoomManager();
@@ -20,7 +19,7 @@ class RoomManager {
   }
 
   private getRoomID(): string | null {
-    return new URLSearchParams(window.location.search).get(ROOM_SEARCH_PARAM);
+    return new URLSearchParams(window.location.search).get(_.ROOM_SEARCH_PARAM);
   }
 
   private createRoom() {

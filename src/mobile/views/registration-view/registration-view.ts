@@ -1,10 +1,9 @@
 import './registration-view.scss';
 
-import MobileNetworkManager from '@mobile/singletons/NetworkManager';
 import View from '@src/abstracts/View';
-import COPY from '@src/COPY';
+import COPY from '@src/lib/COPY';
+import PlayerSessionManager from '@src/mobile/singletons/PlayerSessionManager';
 import RoutingManager from '@src/mobile/singletons/RoutingManager';
-import MESSAGE_TYPES from '@src/singletons/NetworkManager/MESSAGE_TYPES';
 
 const COLORS = [
   '#e74c3c',
@@ -56,12 +55,10 @@ export default class RegistrationView extends View {
   private onSubmit = (event: Event) => {
     event.preventDefault();
 
-    MobileNetworkManager.instance.onOpen(() => {
-      MobileNetworkManager.instance.send(MESSAGE_TYPES.PLAYER_JOINED, {
-        playerId: MobileNetworkManager.playerID,
-        color: this.selectedColor
-      });
-    });
+    // The game-view sends PLAYER_JOINED itself (every time the connection
+    // opens, including reconnects) — persisting the color here is enough
+    // for it to know who to announce.
+    PlayerSessionManager.instance.save(this.selectedColor);
     RoutingManager.instance.route('game');
   };
 

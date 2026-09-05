@@ -13,6 +13,7 @@ interface ExtendedWebSocket extends WebSocket {
 interface JoinMessage {
     type: 'join';
     room: string;
+    clientId?: string;
 }
 
 type RelayMessage = SignalingMessage<'offer'> | SignalingMessage<'answer'> | SignalingMessage<'candidate'>;
@@ -50,6 +51,8 @@ webSocketServer.on('connection', (socket: ExtendedWebSocket) => {
 
       if (data.type === 'join') {
         socket.room = data.room;
+        
+        if (data.clientId) socket.clientId = data.clientId;
         console.log(`User joined room: ${socket.room} (clientId: ${socket.clientId})`);
         socket.send(JSON.stringify({ type: 'joined', payload: { clientId: socket.clientId } }));
         return;

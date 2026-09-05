@@ -23,16 +23,20 @@ class OrientationManager {
   onCalibrationComplete?: () => void;
   onAimUpdate?: (aimX: number, aimY: number) => void;
 
+  private isStarted = false;
+
   constructor() {
     autoBind(this);
+    document.addEventListener('visibilitychange', this.handleVisibilityChange);
   }
 
   async start() {
-    const granted = PermissionManager.instance.request();
+    const granted = await PermissionManager.instance.request();
 
     if (!granted) return false;
 
-    window.addEventListener('deviceorientation', this.handleOrientation);
+    this.isStarted = true;
+    this.attachListener();
     this.calibrate();
 
     return true;
@@ -43,6 +47,18 @@ class OrientationManager {
     this.calibrationSamples = [];
     this.smoothedX = 0;
     this.smoothedY = 0;
+  }
+
+  private handleVisibilityChange() {
+    if (document.visibilityState !== 'visible' || !this.isStarted) return;
+
+    this.attachListener();
+    this.calibrate();
+  }
+
+  private attachListener() {
+    window.removeEventListener('deviceorientation', this.handleOrientation);
+    window.addEventListener('deviceorientation', this.handleOrientation);
   }
 
   private handleOrientation(event: DeviceOrientationEvent) {

@@ -59,8 +59,12 @@ class DesktopNetworkManager extends NetworkManager {
   }
 
   private getOrCreatePeer(remoteSenderId: string): PeerEntry {
-    let entry = this.peers.get(remoteSenderId);
-    if (entry) return entry;
+    const existing = this.peers.get(remoteSenderId);
+    const isStale = existing && ['closed', 'failed', 'disconnected'].includes(existing.peerConnection.connectionState);
+
+    if (existing && !isStale) return existing;
+    
+    if (existing) existing.peerConnection.close();
 
     const peerConnection = new RTCPeerConnection(ICE_SERVERS);
 
@@ -81,7 +85,7 @@ class DesktopNetworkManager extends NetworkManager {
       }
     };
 
-    entry = { peerConnection };
+    const entry: PeerEntry = { peerConnection };
     this.peers.set(remoteSenderId, entry);
     return entry;
   }

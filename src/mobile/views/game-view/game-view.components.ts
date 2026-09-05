@@ -1,5 +1,5 @@
 import View from '@src/abstracts/View';
-import COPY from '@src/COPY';
+import COPY from '@src/lib/COPY';
 
 export default {
   BUTTON_SHOOT: View.createElement('button', {

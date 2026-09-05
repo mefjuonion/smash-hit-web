@@ -21,6 +21,24 @@ export default class PlayerRegistrationSystem extends System {
   }
 
   private createPlayer(data: PlayerJoinedPayload) {
+    const existingEntity = this.query(Player).find(entity => entity.get(Player)?.id === data.playerId);
+
+    if (existingEntity) {
+      const player = existingEntity.get(Player)!;
+      player.color = data.color;
+
+      // The desktop kept the real score the whole time, but the phone's own
+      // display doesn't know that — it only updates on the next scoring
+      // event, so right after a reconnect it still shows whatever it had
+      // (often 0, if the page reloaded). Push the true value now instead of
+      // leaving it looking reset until the player scores again.
+      DesktopNetworkManager.instance.send(MESSAGE_TYPES.SCORE_UPDATED, {
+        playerId: player.id,
+        score: player.score,
+      });
+      return;
+    }
+
     const entity = this.world.createEntity();
 
     const player = new Player();
